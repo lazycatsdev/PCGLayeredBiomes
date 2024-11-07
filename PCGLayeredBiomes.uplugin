@@ -1,0 +1,31 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.3",
+	"FriendlyName": "PCG Layered Biomes",
+	"Description": "PCG Layered Biomes is a plugin for Unreal Engine that allows you to create realistic and multilayered biomes using the PCG.",
+	"Category": "Other",
+	"CreatedBy": "LazyCatsDev",
+	"CreatedByURL": "",
+	"DocsURL": "https://pcg-layered-biomes.snazzydocs.com",
+	"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/aa2d2e7e78e74b9da57f1297066597a0",
+	"SupportURL": "mailto:lazycatsdev@gmail.com",
+	"CanContainContent": true,
+	"IsBetaVersion": false,
+	"IsExperimentalVersion": false,
+	"Installed": false,
+	"Modules": [
+		{
+			"Name": "PCGLayeredBiomes",
+			"Type": "Runtime",
+			"LoadingPhase": "PostConfigInit",
+			"PlatformAllowList": [ "Win64", "Mac", "Linux", "IOS", "Android" ]
+		}
+	],
+	"Plugins": [
+		{
+			"Name": "PCG",
+			"Enabled": true
+		}
+	]
+}
