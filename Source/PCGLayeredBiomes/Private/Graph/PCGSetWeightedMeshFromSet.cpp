@@ -22,16 +22,16 @@
 
 
 
-#include "Graph/PCGMeshFromSpawnManager.h"
+#include "Graph/LBPCGMeshFromSpawnManager.h"
 
 #include "Engine/StaticMesh.h"
-#include "BiomesPCGUtils.h"
+#include "LBBiomesPCGUtils.h"
 #include "PCGComponent.h"
 #include "PCGModule.h"
 #include "PCGPin.h"
-#include "PCGSpawnStructures.h"
-#include "BiomesSpawnManager.h"
-#include "RandomUtils.h"
+#include "LBPCGSpawnStructures.h"
+#include "LBBiomesSpawnManager.h"
+#include "LBRandomUtils.h"
 #include "Data/PCGPointData.h"
 #include "Helpers/PCGAsync.h"
 #include "Helpers/PCGDynamicTrackingHelpers.h"
@@ -41,25 +41,25 @@
 
 #define LOCTEXT_NAMESPACE "PCGFPCGMeshFromSpawnManager"
 
-UPCGMeshFromSpawnManagerSettings::UPCGMeshFromSpawnManagerSettings()
+ULBPCGMeshFromSpawnManagerSettings::ULBPCGMeshFromSpawnManagerSettings()
 {
 	ValueTarget.SetAttributeName(TEXT("Mesh"));
 	bUseSeed = true;
 }
 
-TArray<FPCGPinProperties> UPCGMeshFromSpawnManagerSettings::InputPinProperties() const
+TArray<FPCGPinProperties> ULBPCGMeshFromSpawnManagerSettings::InputPinProperties() const
 {
 	return DefaultPointInputPinProperties();
 }
 
-TArray<FPCGPinProperties> UPCGMeshFromSpawnManagerSettings::OutputPinProperties() const
+TArray<FPCGPinProperties> ULBPCGMeshFromSpawnManagerSettings::OutputPinProperties() const
 {
 	return DefaultPointOutputPinProperties();
 }
 
-FPCGElementPtr UPCGMeshFromSpawnManagerSettings::CreateElement() const
+FPCGElementPtr ULBPCGMeshFromSpawnManagerSettings::CreateElement() const
 {
-	return MakeShared<FPCGMeshFromSpawnManager>();
+	return MakeShared<FLBPCGMeshFromSpawnManager>();
 }
 
 namespace PCGMeshSet
@@ -67,7 +67,7 @@ namespace PCGMeshSet
 	struct FSharedParams
 	{
 		FPCGContext* Context = nullptr;
-		const TArray<FPCGSpawnInfo>* Actors = nullptr;
+		const TArray<FLBPCGSpawnInfo>* Actors = nullptr;
 		int TotalWeight = 0;
 		int32 Seed = 0;
 	};
@@ -78,7 +78,7 @@ namespace PCGMeshSet
 		UPCGPointData* OutputPointData = nullptr;
 	};
 
-	const FPCGSpawnInfo& SelectRandom(const FSharedParams& SharedParams, const FRandomStream& RandomSource)
+	const FLBPCGSpawnInfo& SelectRandom(const FSharedParams& SharedParams, const FRandomStream& RandomSource)
 	{
 		if (SharedParams.TotalWeight <= 1)
 		{
@@ -99,7 +99,7 @@ namespace PCGMeshSet
 		return SharedParams.Actors->Last();
 	}
 	
-	void ProcessPoints(const FSharedParams& SharedParams, const FBufferParams& BufferParams, const UPCGMeshFromSpawnManagerSettings& Settings)
+	void ProcessPoints(const FSharedParams& SharedParams, const FBufferParams& BufferParams, const ULBPCGMeshFromSpawnManagerSettings& Settings)
 	{
 		const TArray<FPCGPoint>& SrcPoints = BufferParams.InputPointData->GetPoints();
 
@@ -142,7 +142,7 @@ namespace PCGMeshSet
 				OutPoint = InPoint;
 				FRandomStream RandomSource(PCGHelpers::ComputeSeed(SharedParams.Seed, InPoint.Seed));
 
-				const auto& Info = FRandomUtils::SelectRandom<FPCGSpawnInfo>(*SharedParams.Actors, RandomSource, &SharedParams.TotalWeight);
+				const auto& Info = FLBRandomUtils::SelectRandom<FLBPCGSpawnInfo>(*SharedParams.Actors, RandomSource, &SharedParams.TotalWeight);
 
 				Results.Values[WriteIndex] = Info.Mesh.ToString();
 
@@ -164,7 +164,7 @@ namespace PCGMeshSet
 		// now apply these results
 		BufferParams.OutputPointData->GetMutablePoints() = MoveTemp(Results.Points);
 
-		UBiomesPCGUtils::SetAttributeHelper<FString>(BufferParams.OutputPointData, Settings.ValueTarget, Results.Values);
+		ULBBiomesPCGUtils::SetAttributeHelper<FString>(BufferParams.OutputPointData, Settings.ValueTarget, Results.Values);
 
 		if (ApplyBounds)
 		{
@@ -172,17 +172,17 @@ namespace PCGMeshSet
 			BoundsMinSelector.SetPointProperty(EPCGPointProperties::BoundsMin);
 			BoundsMaxSelector.SetPointProperty(EPCGPointProperties::BoundsMax);
 		
-			UBiomesPCGUtils::SetAttributeHelper<FVector>(BufferParams.OutputPointData, BoundsMinSelector, Results.BoundsMin);
-			UBiomesPCGUtils::SetAttributeHelper<FVector>(BufferParams.OutputPointData, BoundsMaxSelector, Results.BoundsMax);
+			ULBBiomesPCGUtils::SetAttributeHelper<FVector>(BufferParams.OutputPointData, BoundsMinSelector, Results.BoundsMin);
+			ULBBiomesPCGUtils::SetAttributeHelper<FVector>(BufferParams.OutputPointData, BoundsMaxSelector, Results.BoundsMax);
 		}
 	}
 }
 
-bool FPCGMeshFromSpawnManager::ExecuteInternal(FPCGContext* Context) const
+bool FLBPCGMeshFromSpawnManager::ExecuteInternal(FPCGContext* Context) const
 {
 	TRACE_CPUPROFILER_EVENT_SCOPE(FPCGNoise::Execute);
 
-	const auto* Settings = Context->GetInputSettings<UPCGMeshFromSpawnManagerSettings>();
+	const auto* Settings = Context->GetInputSettings<ULBPCGMeshFromSpawnManagerSettings>();
 	check(Settings);
 
 	PCGMeshSet::FSharedParams SharedParams;
@@ -194,17 +194,17 @@ bool FPCGMeshFromSpawnManager::ExecuteInternal(FPCGContext* Context) const
 		return true;
 	}
 	
-	const auto* Manager = UBiomesSpawnManager::GetManager(Context->SourceComponent.Get()); 
+	const auto* Manager = ULBBiomesSpawnManager::GetManager(Context->SourceComponent.Get()); 
 	if (!Manager)
 	{
-		PCGE_LOG(Error, GraphAndLog, LOCTEXT("NoActorsManager", "Source Actor has no UBiomesSpawnManager component"));
+		PCGE_LOG(Error, GraphAndLog, LOCTEXT("NoActorsManager", "Source Actor has no ULBBiomesSpawnManager component"));
 		return true;		
 	}
 	
 	SharedParams.Actors = Manager->FindSet(Settings->SetName);
 	if (!SharedParams.Actors)
 	{
-		PCGE_LOG(Error, GraphAndLog, LOCTEXT("NoSet", "Set not found in UBiomesSpawnManager component"));
+		PCGE_LOG(Error, GraphAndLog, LOCTEXT("NoSet", "Set not found in ULBBiomesSpawnManager component"));
 		return true;		
 	}
 
@@ -255,13 +255,13 @@ bool FPCGMeshFromSpawnManager::ExecuteInternal(FPCGContext* Context) const
 	return true;
 }
 
-void FPCGMeshFromSpawnManager::GetDependenciesCrc(const FPCGDataCollection& InInput, const UPCGSettings* InSettings,
+void FLBPCGMeshFromSpawnManager::GetDependenciesCrc(const FPCGDataCollection& InInput, const UPCGSettings* InSettings,
 	UPCGComponent* InComponent, FPCGCrc& OutCrc) const
 {
 	FPCGCrc Crc;
 	FPCGPointProcessingElementBase::GetDependenciesCrc(InInput, InSettings, InComponent, Crc);
 
-	const auto* Manager = UBiomesSpawnManager::GetManager(InComponent);
+	const auto* Manager = ULBBiomesSpawnManager::GetManager(InComponent);
 	if (!Manager)
 	{
 		OutCrc = Crc;
