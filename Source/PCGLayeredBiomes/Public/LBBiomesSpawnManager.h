@@ -95,8 +95,10 @@ private:
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Biomes, AdvancedDisplay, meta=(EditCondition="false"))
 	FGuid Guid;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Biomes)
 	TObjectPtr<ULBPCGSpawnPreset> Preset;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Biomes)
 	TObjectPtr<ULBBiomesSettings> Biomes;
 	
